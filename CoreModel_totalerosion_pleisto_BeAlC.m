@@ -2,7 +2,7 @@ function [out] = CoreModel_totalerosion_pleisto_BeAlC(lat, lon, elv, time, erate
 
 data = [time, erate, vel, thk];
 
-[history.model_times, history.model_mask, erosion.erode] = get_thk_erode_times(data);
+[history.model_times, history.glacial_lengths, history.interglacial_lengths, erosion.erode] = get_thk_erode_times(data);
 
 % this version is for sites that are currently covered by ice. 
 
@@ -48,7 +48,7 @@ p.P26sp = p.P10sp.*consts.R2610q; % Al-26 spallation production rate at surface
 p.P14sp = consts.P14q_St.*SFsp; % C-14 spallation production rate at surface
 
 % Attenuation
-p.Lsp = 140; % g/cm2.
+p.Lsp = 160; % g/cm2.
 
 % Define total production
 
@@ -59,15 +59,14 @@ P14z = PofZ(z_gcm2, m, p, 14);
 %% Unwrap variables 
 
 model_times = history.model_times'; % pre-deglaciation exposure history as determined by the d18O threshold
-
+length_gl = history.glacial_lengths; % length of each ice-covered period
+length_int = history.interglacial_lengths; % length of each ice-free period
 %% Model Set Up
 
 % Create gl_int vectors with d18O data
 
 % add Holocene history information
 timesteps = [model_times]; % concatenate all exposure history information; in this version, just from d18O threshold
-
-ice_mask = history.model_mask;
 
 starttime = max(fliplr(cumsum(timesteps))); % define model start time
 
@@ -78,9 +77,9 @@ N_final_14 = zeros(length(profile_vec));
 
 % define erosion
 
-erode = erosion.erode .* rho; % [g cm^-2]
-erode = round(erode, 2); % round to nearest 0.1 g cm^-2.
+erode = erosion.erode;
 
+erode = round(erode, 2); % round to nearest 0.1 cm.
 startdepth = max(fliplr(cumsum(erode))); % find starting depth of modern rock surface
 
 start_index = ceil(((startdepth./rho)./dz)+1); % find index of the starting depth
@@ -104,18 +103,18 @@ N_old_14 = zeros(length(profile_vec), 1);
 
 for a = 1:length(timesteps)
 
-    % expose for interglacials
+    % expose for even a (interglacials)
 
-    if ice_mask(a) == 0
+    if mod(a, 2) == 0
         % calculate cosmogenic nuclide accumulation during exposure
         N_new_10 = N_old_10.*exp(-consts.l10.*timesteps(a)) + P10z(topindex_new:bottomindex_new)'./consts.l10 .* (1-exp(-consts.l10.*timesteps(a)));
         N_new_26 = N_old_26.*exp(-consts.l26.*timesteps(a)) + P26z(topindex_new:bottomindex_new)'./consts.l26 .* (1-exp(-consts.l26.*timesteps(a)));
         N_new_14 = N_old_14.*exp(-consts.l14.*timesteps(a)) + P14z(topindex_new:bottomindex_new)'./consts.l14 .* (1-exp(-consts.l14.*timesteps(a)));
         % no erosion takes place
         topindex_new = topindex_old;
-    elseif ice_mask(a) == 1
-    % bury and erode for glacials
-        % cosmogenic nuclide decay
+    else
+    % bury and erode for odd a (glacials)
+        % cosmogenic nucldie decay
         N_new_10 = N_old_10.*exp(-consts.l10.*timesteps(a));
         N_new_26 = N_old_26.*exp(-consts.l26.*timesteps(a));
         N_new_14 = N_old_14.*exp(-consts.l14.*timesteps(a));
