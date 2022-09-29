@@ -14,9 +14,7 @@ thickness = data(:, 4);
 
 time = data(:, 1).*-1;
 
-erate = data(:, 2);
-
-etot = erate .* 500; % total erosion per timestep in cm
+etot = data(:, 2) .* 100; % total erosion per timestep in cm
 
 etot(find(~thickness > 0)) = 0;
 
