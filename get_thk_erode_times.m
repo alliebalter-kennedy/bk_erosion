@@ -16,7 +16,7 @@ time = data(:, 1).*-1;
 
 etot = data(:, 2) .* 100; % total erosion per timestep in cm
 
-etot(find(~thickness > 0)) = 0;
+etot(find(~(thickness > 0))) = 0; % force erosion to be zero when no ice 
 
 %% glaciation mask on full dataset
 
@@ -59,7 +59,7 @@ end
 end
 
 %%
-%to check if times translated correctly. 
+% % to check if times translated correctly. 
 % figure
 % hold on
 % plot(time(glaciation_mask == 1), 3.*ones(length(time(glaciation_mask == 1)), 1), 'bo')
