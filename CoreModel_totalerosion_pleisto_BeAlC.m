@@ -4,8 +4,6 @@ data = [time, etot, vel, thk];
 
 [history.model_times, history.model_mask, erosion.erode] = get_thk_erode_times(data);
 
-% this version is for sites that are currently covered by ice. 
-
 %% Load Constants
 
 consts = bedrock_constants();
@@ -48,7 +46,7 @@ p.P26sp = p.P10sp.*consts.R2610q; % Al-26 spallation production rate at surface
 p.P14sp = consts.P14q_St.*SFsp; % C-14 spallation production rate at surface
 
 % Attenuation
-p.Lsp = 140; % g/cm2.
+p.Lsp = 160; % g/cm2.
 
 % Define total production
 
@@ -67,7 +65,7 @@ model_times = history.model_times'; % pre-deglaciation exposure history as deter
 % add Holocene history information
 timesteps = [model_times]; % concatenate all exposure history information; in this version, just from d18O threshold
 
-ice_mask = history.model_mask;
+ice_mask = [history.model_mask];
 
 starttime = max(fliplr(cumsum(timesteps))); % define model start time
 
@@ -78,7 +76,7 @@ N_final_14 = zeros(length(profile_vec));
 
 % define erosion
 
-erode = erosion.erode .* rho; % [g cm^-2]
+erode = [erosion.erode] .* rho; % [g cm^-2]
 erode = round(erode, 2); % round to nearest 0.1 g cm^-2.
 
 startdepth = max(fliplr(cumsum(erode))); % find starting depth of modern rock surface
