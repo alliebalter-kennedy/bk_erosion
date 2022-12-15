@@ -29,6 +29,12 @@ else
     P26mu(inbounds) = interp1(m.zz,m.P26mu,z(inbounds));
     P26mu(outofbounds) = m.P26mu(end).*exp(-(z(outofbounds)-max(m.zz))./m.L26bot);
     out = P26mu + p.P26sp.*exp(-z./p.Lsp);
+elseif nuclide == 14;
+    P14mu(inbounds) = interp1(m.zz,m.P14mu,z(inbounds));
+    P14mu(outofbounds) = m.P14mu(end).*exp(-(z(outofbounds)-max(m.zz))./m.L14bot);
+    out = P14mu + p.P14sp.*exp(-z./p.Lsp);
+else 
+    print('Nuclide not supported')
 end;
 
 % Rewrap matrix input
