@@ -16,20 +16,20 @@ time = data(:, 1).*-1;
 
 etot = data(:, 2) .* 100; % total erosion per timestep in cm
 
-etot(find(~(thickness > 0))) = 0; % force erosion to be zero when no ice 
+etot(thickness<=1) = 0; % force erosion to be zero when no ice if not already
 
 %% glaciation mask on full dataset
 
-glaciation_mask = thickness > 0; % this is when the site is glaciated
+glaciation_mask = thickness > 1; % this is when the site is glaciated
 
     
 %% find model times and ice-cover mask
 
 switch_diff = diff(glaciation_mask); % if difference is -1, then going from ice cover to no ice cover; if difference is 1, going from no ice cover to cover. 
-switch_indx = find(or(switch_diff == 1, switch_diff == -1));
+switch_indx = find(or(switch_diff == 1, switch_diff == -1))+1;
 switch_indx_full = [1; switch_indx; length(time)];
 
-switch_val = switch_diff(switch_indx);
+switch_val = switch_diff(switch_indx-1);
 
 switch_times = time(switch_indx_full);
 
@@ -51,27 +51,24 @@ end
 erode = zeros(length(model_times), 1);
 
 for a = 1:length(erode)
-if a == 1
-erode(a) = sum(etot(switch_indx_full(a):switch_indx_full(a+1)));
-else 
-erode(a) = sum(etot((switch_indx_full(a)+1):switch_indx_full(a+1)));
-end
+erode(a) = sum(etot(switch_indx_full(a):switch_indx_full(a+1)-1));
 end
 
 %%
-% % to check if times translated correctly. 
-% figure
-% hold on
-% plot(time(glaciation_mask == 1), 3.*ones(length(time(glaciation_mask == 1)), 1), 'bo')
-% plot(time(glaciation_mask == 0), 3.*ones(length(time(glaciation_mask == 0)), 1), 'ro')
-% 
-% for a = 1:length(model_times)
-%     if model_mask(a) == 1
-%         plot([switch_times(a) (switch_times(a)-model_times(a))], [5 5], 'b', 'LineWidth', 4)
-%     elseif model_mask(a) == 0
-%         plot([switch_times(a) (switch_times(a)-model_times(a))], [5 5], 'r', 'LineWidth', 4)
-%     end
-% end
-% 
-% ylim([0 8])
+% to check if times translated correctly. 
+figure
+hold on
+plot(time(glaciation_mask == 1), 3.*ones(length(time(glaciation_mask == 1)), 1), 'bo')
+plot(time(glaciation_mask == 0), 3.*ones(length(time(glaciation_mask == 0)), 1), 'ro')
+plot(time, glaciation_mask)
+
+for a = 1:length(model_times)
+    if model_mask(a) == 1
+        plot([switch_times(a) (switch_times(a)-model_times(a))], [5 5], 'b', 'LineWidth', 4)
+    elseif model_mask(a) == 0
+        plot([switch_times(a) (switch_times(a)-model_times(a))], [5 5], 'r', 'LineWidth', 4)
+    end
+end
+
+ylim([0 8])
 end
