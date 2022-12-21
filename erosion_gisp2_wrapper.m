@@ -20,7 +20,7 @@ z_gcm2 = z_cm.*rho;    % [g cm^-2]; depth
 
 
 consts = bedrock_constants();
-%% Site and sample info for gisp-CR1
+%% Site and sample info for gisp2
 
 datafile = 'data/gisp2_conc.xlsx';
 
@@ -91,32 +91,11 @@ gisp.p.P10z = PofZ(z_gcm2, gisp.m, gisp.p, 10); % sum of production by spallatio
 gisp.p.P26z = PofZ(z_gcm2, gisp.m, gisp.p, 26);
 gisp.p.P14z = PofZ(z_gcm2, gisp.m, gisp.p, 14);
  
-%% Find best e and prior exposure
-
-% ee_recent = [0:1e-5:2e-4]; % erosion in cm/yr
-% ee_longterm = [0:1e-5:1e-4]; % erosion in cm/yr
-% xexp = [2e5:1e4:3e5];
-% xbur = [0]; % within 1.1 Myr burial found in Schaefer 2016
-% 
-% for a = 1:length(ee_recent)
-%     for b = 1:length(ee_longterm)
-%         for c = 1:length(xexp)
-%             for d = 1:length(xbur)
-%                 chi2(a,b,c,d) = CoreModel_fiterosion_pleisto_BeAlC([ee_recent(a) ee_recent(a) xexp(c) xbur(d)], gisp.p, gisp.hist, gisp.data, consts, 0);
-%         
-%             end
-%         end
-%     end
-% end
-% 
-% [v,loc] = min(chi2(:));
-% [ii,jj,kk,ll] = ind2sub(size(chi2),loc);
-% 
 %% Best fit fminsearch
 
-x(1) = 2e-4; % recent erosion (cm)
+x(1) = 2e-4; % recent erosion (cm/yr)
 x(2) = 0; % long-term erosion
-x(3) = 1e2; % exposure prior to modeled history
+x(3) = 1e5; % exposure prior to modeled history
 
 x0 = [x(1) x(2) x(3)]; % initial guess
 
@@ -125,17 +104,7 @@ ub = [Inf 0 Inf];
 
 [optx, fval] = fminsearchbnd(@(x) CoreModel_fiterosion_pleisto_BeAlC(x, gisp.p, gisp.hist, gisp.data, consts, 0), x0, lb,ub);
 
-% [optx, fval] = fminsearch(@(x) CoreModel_fiterosion_pleisto_BeAlC(x, gisp.p, gisp.hist, gisp.data, consts, 0), x0);
-%% best 
-
-% opt_ee_recent = ee_recent(ii);
-% opt_ee_longterm = ee_longterm(jj);
-% opt_xexp = xexp(kk);
-% opt_xbur = xbur(ll);
-
 %% plot
-
-% result = CoreModel_fiterosion_pleisto_BeAlC([ee_recent(ii) ee_recent(ii) xexp(kk) xbur(ll)], gisp.p, gisp.hist, gisp.data, consts, 1);
 
 if plot_flag == 1
 result = CoreModel_fiterosion_pleisto_BeAlC(optx, gisp.p, gisp.hist, gisp.data, consts, 1);
@@ -145,18 +114,18 @@ N_model = result.N_model;
 figure
 for a = 1:length(N_model)
     if gisp.data{a}.nuclide == 10
-        plot([N_model(a) N_model(a)], [gisp.data{a}.td(1) gisp.data{a}.bd(end)], 'r')
+        plot([N_model(a) N_model(a)], [gisp.data{a}.td(1)./rho gisp.data{a}.bd(end)./rho], 'r')
         hold on
-        plot([gisp.data{a}.N gisp.data{a}.N], [gisp.data{a}.td(1) gisp.data{a}.bd(end)], 'k')    
+        plot([gisp.data{a}.N gisp.data{a}.N], [gisp.data{a}.td(1)./rho gisp.data{a}.bd(end)./rho], 'k')    
     elseif gisp.data{a}.nuclide == 26
-        plot([N_model(a) N_model(a)], [gisp.data{a}.td(1) gisp.data{a}.bd(end)], 'b')
+        plot([N_model(a) N_model(a)], [gisp.data{a}.td(1)./rho gisp.data{a}.bd(end)./rho], 'b')
         hold on
-        plot([gisp.data{a}.N gisp.data{a}.N], [gisp.data{a}.td(1) gisp.data{a}.bd(end)], 'g')
+        plot([gisp.data{a}.N gisp.data{a}.N], [gisp.data{a}.td(1)./rho gisp.data{a}.bd(end)./rho], 'g')
     end
 end
 hold on
-plot(result.N_final_10, result.z_gcm2,'r:')
-plot(result.N_final_26, result.z_gcm2, 'b:')
+plot(result.N_final_10, result.z_gcm2./rho,'r:')
+plot(result.N_final_26, result.z_gcm2./rho, 'b:')
 
     set(gca, 'ydir', 'reverse', 'ylim', [0 500])
     grid on
