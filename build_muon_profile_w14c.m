@@ -5,6 +5,8 @@ function out = build_muon_profile_w14c(pressure,consts,plotFlag)
 % facilitate numerical integration later.
 %
 % Greg Balco -- Berkeley Geochronology Center -- May 2016 
+% Updated by Allie Balter-Kennedy in Jan 2020 to include C-14 constants
+% from Balco, 2017.
 % 
 % Syntax: out = build_muon_profile(pressure,consts,plotFlag)
 % pressure is site air pressure in hPa
@@ -64,7 +66,8 @@ if plotFlag == 1;
     px = (m.zz(end):100:(m.zz(end)+10000));
     py10 = m.P10mu(end).*exp(-(px-m.zz(end))./L10);
     py26 = m.P26mu(end).*exp(-(px-m.zz(end))./L26);
-    plot(px,py10,'g',px,py26,'b');
+    py14 = m.P14mu(end).*exp(-(px-m.zz(end))./L14);
+    plot(px,py10,'g',px,py26,'b', px,py14, 'k');
 
 end;
 
