@@ -36,7 +36,7 @@ erosion_rate(recent_cover) = erate_recent;
 erode = erosion_rate .* timesteps; 
 %% Model Set Up
 
-starttime = max(fliplr(cumsum(timesteps))); % define model start time
+starttime = sum(timesteps); % define model start time
 
 N_final_10 = zeros(length(profile_gcm2), 1); % create matrix for final nuclide concentrations
 N_final_26 = zeros(length(profile_gcm2), 1);
@@ -45,10 +45,10 @@ N_final_14 = zeros(length(profile_gcm2), 1);
 
 % define erosion
 
-erode = round(erode, 2); % round to nearest 0.1 g cm.^2
-startdepth = max(fliplr(cumsum(erode))); % find starting depth of modern rock surface
+erode = round(erode, 2); % round to nearest 0.01 g cm.^2
+startdepth = sum(erode); % find starting depth of modern rock surface
 
-start_index = ceil(((startdepth./rho)./dz)+1); % find index of the starting depth [turn to cm so can use dz]
+start_index = ceil(((startdepth./rho)./dz))+1; % find index of the starting depth [turn to cm so can use dz]
 
 %% Run Model
 
@@ -87,7 +87,7 @@ for a = 1:length(timesteps)
         
         % shift depth profile up so that next exposure period begins at
         % new production rate
-        topdepth_new = round(topdepth_old - erode(a), 2); % depth at the end of the glacial; round to nearest 0.1 cm
+        topdepth_new = round(topdepth_old - erode(a), 2); % depth at the end of the glacial; round to nearest 0.01 g cm-2
         topindex_new = ceil(((topdepth_new./rho)./dz)+1); % find index for top of depth profile. will be used to find production rate during next exposure period. 
         bottomindex_new = ceil(topindex_new + (length(profile_gcm2)-1)); % find index for bottom of depth profile.
     end
@@ -128,6 +128,10 @@ for a = 1:length(data)
         this_N_10(i) = trapz(depth_temp, N_temp_10)./(data{a}.bd(i)-data{a}.td(i)); % sum modeled nuclide concentrations over sample depth
         this_N_26(i) = trapz(depth_temp, N_temp_26)./(data{a}.bd(i)-data{a}.td(i));
         this_N_14(i) = trapz(depth_temp, N_temp_14)./(data{a}.bd(i)-data{a}.td(i));
+
+        clear N_temp_10 % probably not necessary to do this clearing here.
+        clear N_temp_26
+        clear N_temp_14
     end
    
     if data{a}.nuclide == 10
@@ -144,6 +148,7 @@ for a = 1:length(data)
     clear this_N_10
     clear this_N_26
     clear this_N_14
+
 end
 
 result.N_model = N_model;
