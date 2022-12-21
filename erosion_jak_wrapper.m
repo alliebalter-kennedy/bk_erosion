@@ -10,13 +10,12 @@ function out = erosion_jak_wrapper(history_filename, plot_flag);
 
 %% Inputs to calculate production 
 
-% Define a rock core depth -- make it longer than your actual core. 
+% Define a depth profile longer than expected total erosion over the run.  
 
 dz = 0.1; % [cm] needs to be same precision as your sample thickness measurements.
 
 rho = 2.65;            % [g cm^-3]; rock density
-z_cm = 0:dz:4000000;   % [cm]; length of starting production profile.
-                       % needs to be longer than total erosion over model.
+z_cm = 0:dz:4000000;   % [cm]; length of starting production profile. Needs to be longer than total erosion over model.
 z_gcm2 = z_cm.*rho;    % [g cm^-2]; depth
 
 
@@ -97,33 +96,12 @@ jak.p.Lsp = 160; % g/cm2.
 jak.p.P10z = PofZ(z_gcm2, jak.m, jak.p, 10); % sum of production by spallation and muons; Balco (2017)
 jak.p.P26z = PofZ(z_gcm2, jak.m, jak.p, 26);
 jak.p.P14z = PofZ(z_gcm2, jak.m, jak.p, 14);
- 
-%% Find best e and prior exposure
-
-% ee_recent = [0:1e-5:2e-4]; % erosion in cm/yr
-% ee_longterm = [0:1e-5:1e-4]; % erosion in cm/yr
-% xexp = [2e5:1e4:3e5];
-% xbur = [0]; % within 1.1 Myr burial found in Schaefer 2016
-% 
-% for a = 1:length(ee_recent)
-%     for b = 1:length(ee_longterm)
-%         for c = 1:length(xexp)
-%             for d = 1:length(xbur)
-%                 chi2(a,b,c,d) = CoreModel_fiterosion_pleisto_BeAlC([ee_recent(a) ee_recent(a) xexp(c) xbur(d)], jak.p, jak.hist, jak.data, consts, 0);
-%         
-%             end
-%         end
-%     end
-% end
-% 
-% [v,loc] = min(chi2(:));
-% [ii,jj,kk,ll] = ind2sub(size(chi2),loc);
-% 
+  
 %% Best fit fminsearch
 
-x(1) = 0.02; % recent erosion (cm)
-x(2) = 0.02; % long-term erosion (cm)
-x(3) = 0; % exposure prior to modeled history
+x(1) = 0.02; % recent erosion (cm/yr)
+x(2) = 0.03; % long-term erosion (cm/yr)
+x(3) = 0; % exposure prior to modeled history, don't use for jak
 
 x0 = [x(1) x(2) x(3)]; % initial guess
 
@@ -132,17 +110,8 @@ ub = [0.02 Inf 0];
 
 [optx, fval] = fminsearchbnd(@(x) CoreModel_fiterosion_pleisto_BeAlC(x, jak.p, jak.hist, jak.data, consts, 0), x0, lb,ub);
 
-% [optx, fval] = fminsearch(@(x) CoreModel_fiterosion_pleisto_BeAlC(x, jak.p, jak.hist, jak.data, consts, 0), x0);
-%% best 
-
-% opt_ee_recent = ee_recent(ii);
-% opt_ee_longterm = ee_longterm(jj);
-% opt_xexp = xexp(kk);
-% opt_xbur = xbur(ll);
-
 %% plot
 if plot_flag == 1
-% result = CoreModel_fiterosion_pleisto_BeAlC([ee_recent(ii) ee_recent(ii) xexp(kk) xbur(ll)], jak.p, jak.hist, jak.data, consts, 1);
 
 result = CoreModel_fiterosion_pleisto_BeAlC(optx, jak.p, jak.hist, jak.data, consts, 1);
 
@@ -151,18 +120,18 @@ N_model = result.N_model;
 figure
 for a = 1:length(N_model)
     if jak.data{a}.nuclide == 10
-        plot([N_model(a) N_model(a)], [jak.data{a}.td(1) jak.data{a}.bd(end)], 'r')
+        plot([N_model(a) N_model(a)], [jak.data{a}.td(1)./rho jak.data{a}.bd(end)./rho], 'r')
         hold on
-        plot([jak.data{a}.N jak.data{a}.N], [jak.data{a}.td(1) jak.data{a}.bd(end)], 'k')    
+        plot([jak.data{a}.N jak.data{a}.N], [jak.data{a}.td(1)./rho jak.data{a}.bd(end)./rho], 'k')    
     elseif jak.data{a}.nuclide == 26
-        plot([N_model(a) N_model(a)], [jak.data{a}.td(1) jak.data{a}.bd(end)], 'b')
+        plot([N_model(a) N_model(a)], [jak.data{a}.td(1)./rho jak.data{a}.bd(end)./rho], 'b')
         hold on
-        plot([jak.data{a}.N jak.data{a}.N], [jak.data{a}.td(1) jak.data{a}.bd(end)], 'g')
+        plot([jak.data{a}.N jak.data{a}.N], [jak.data{a}.td(1)./rho jak.data{a}.bd(end)./rho], 'g')
     end
 end
 hold on
-plot(result.N_final_10, result.z_gcm2,'r:')
-plot(result.N_final_26, result.z_gcm2, 'b:')
+plot(result.N_final_10, result.z_gcm2./rho,'r:')
+plot(result.N_final_26, result.z_gcm2./rho, 'b:')
 
     set(gca, 'ydir', 'reverse', 'ylim', [0 500])
     grid on
