@@ -56,7 +56,7 @@ P14z = PofZ(z_gcm2, m, p, 14);
  
 %% Unwrap variables 
 
-model_times = history.model_times'; % pre-deglaciation exposure history as determined by the d18O threshold
+model_times = history.model_times'; % pre-deglaciation exposure history as determined by get_thk_erode_times.m
 
 %% Model Set Up
 
@@ -135,11 +135,15 @@ end
 
 % save results
 
-N_final_10 = N_new_10; % save final depth profiles at 0.1 cm spacing for each combo of erosion rates.
+N_final_10 = N_new_10; % save final depth profiles at 0.1 cm spacing.
 N_final_26 = N_new_26; 
 N_final_14 = N_new_14; 
-depths_final = z_gcm2(topindex_new:bottomindex_new)'; % all final depths should be zero. this passes through test in model run script.
+depths_final = z_gcm2(topindex_new:bottomindex_new)'; % all final depths should be zero.
 
-out = [N_final_10(1) N_final_26(1)];
+if depths_final(1) ~= 0
+    disp('WARNING: depths not equal to zero at end of model run')
+end
+
+out = [N_final_10(1) N_final_26(1) N_final_10(4001)];
 end
 
