@@ -10,7 +10,9 @@ consts.delP14q_St = 0.443; % Svalbard Saturated Peaks - SHOULD UPDATE!!
 
 consts.R2610q = 6.75;
 
-consts.P3p_St = 124.03; % Borchers PR
+consts.P3p_St = 119.6; % Borchers PR
+consts.delP3p_St = 119.6.*0.11; % Borchers PR
+
 
 % Muon interaction cross-sections
 
@@ -27,7 +29,7 @@ consts.mc26q.sigma0 = 3.89e-30; % Balco, 2017
 % C-14 from Balco et al., 2017
 consts.mc14q.Natoms = 2.006e22;
 consts.mc14q.k_neg = 0.116 .* 0.704 .* 0.1828; % from Balco, 2017
-consts.mc14q.sigma0 = 0.45e-27./190; % Heisinger et al., 2002
+consts.mc14q.sigma0 = 0.45e-27./190; % Heisinger et al., 2002 for alpha = 1
 
 % Also define decay constants
 
