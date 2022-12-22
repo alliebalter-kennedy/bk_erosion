@@ -51,7 +51,11 @@ end
 erode = zeros(length(model_times), 1);
 
 for a = 1:length(erode)
-erode(a) = sum(etot(switch_indx_full(a):switch_indx_full(a+1)-1));
+if a<length(erode)
+    erode(a) = sum(etot(switch_indx_full(a):switch_indx_full(a+1)-1));
+elseif a == length(erode)
+    erode(a) = sum(etot(switch_indx_full(a):switch_indx_full(a+1)));
+end
 end
 
 %%
@@ -71,4 +75,13 @@ for a = 1:length(model_times)
 end
 
 ylim([0 8])
+
+
+
+
+
+
+
+
+
 end
